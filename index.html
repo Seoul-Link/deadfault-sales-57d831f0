@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>데드폴트 판매 리포트</title>
+<style>
+/* 서울링크 화면 정본 양식 (house style) — 정본: docs/DESIGN_STANDARD.md
+ * 출처: scripts/build_ceo_home.py 의 대표 홈 스타일을 2026-08-22 에 뽑아낸 것.
+ * 새 화면을 만들 때 이 파일을 통째로 <style> 안에 넣거나
+ * `from house_style import CSS, HEAD` (scripts/house_style.py) 로 쓴다.
+ * 색을 새로 짓지 마라 — 아래 토큰에 없는 색을 쓰면 그때부터 화면마다 달라진다. */
+
+ :root{
+   color-scheme:light;
+   --void:#f4f2ee; --panel:#ffffff; --panel2:#faf9f6; --edge:#dfdbd3;
+   --ink:#1a1c20; --dim:#5f6673; --faint:#8b93a1;
+   --alarm:#d43b1e; --warn:#b3730a; --calm:#1a8f6a; --link:#0a6f86;
+   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+   --sans:Pretendard,-apple-system,"Apple SD Gothic Neo",sans-serif;
+ }
+ /* 어두운 판은 **부를 때만** 쓴다 — <html data-theme="dark">.
+  * 08-27: 맥이 다크모드면 화면이 저절로 새까매져서 대표가 못 봤다.
+  * 자동(prefers-color-scheme)으로 되돌리지 마라. 기본은 밝은 것이다. */
+ :root[data-theme="dark"]{
+   color-scheme:dark;
+   --void:#0d1016; --panel:#161a21; --panel2:#1c2129; --edge:#2b323d;
+   --ink:#e8eef5; --dim:#98a2b0; --faint:#69737f;
+   --alarm:#ff6a4d; --warn:#e8a72c; --calm:#35c99a; --link:#5ec8e0;
+ }
+ *{box-sizing:border-box}
+ html{-webkit-text-size-adjust:100%;background:var(--void)}
+ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--sans);line-height:1.5;
+   background-image:linear-gradient(color-mix(in srgb,var(--edge) 45%,transparent) 1px,transparent 1px),
+     linear-gradient(90deg,color-mix(in srgb,var(--edge) 45%,transparent) 1px,transparent 1px);
+   background-size:46px 46px;background-position:-1px -1px}
+ .wrap{max-width:1040px;margin:0 auto;padding:22px 18px 72px}
+ header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;
+   border-bottom:1px solid var(--edge);padding-bottom:10px}
+ .brand{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--faint)}
+ .clock{font-family:var(--mono);font-size:11px;color:var(--dim)}
+
+ /* ① 지금 */
+ .hero{margin:22px 0 6px;padding:26px 24px 22px;border:1px solid var(--edge);border-radius:14px;
+   background:var(--panel);box-shadow:0 1px 2px rgba(0,0,0,.04);position:relative;overflow:hidden}
+ .hero::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--tone)}
+ .hero.alarm{--tone:var(--alarm)} .hero.warn{--tone:var(--warn)} .hero.calm{--tone:var(--calm)}
+ .kick{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--tone);text-transform:uppercase}
+ .hline{font-size:clamp(21px,3.6vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.22;margin:8px 0 8px;
+   text-wrap:balance}
+ .hsub{font-family:var(--mono);font-size:12px;color:var(--dim)}
+ 
+
+ /* ② 맥박 */
+ .pulse{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;margin:14px 0 26px;
+   background:var(--edge);border:1px solid var(--edge);border-radius:12px;overflow:hidden}
+ .p{background:var(--panel);padding:12px 13px;display:flex;flex-direction:column;gap:2px;
+   text-decoration:none;color:inherit;transition:background .15s}
+ a.p:hover{background:var(--panel2)}
+ .pv{font-family:var(--mono);font-size:21px;font-weight:700;color:var(--dim);letter-spacing:-.02em}
+ .pk{font-size:11px;color:var(--faint)}
+ .p.hot .pv{color:var(--warn);}
+ .p.hot .pk{color:var(--dim)}
+
+ h2{font-size:12px;font-family:var(--mono);letter-spacing:.18em;color:var(--faint);
+   text-transform:uppercase;margin:30px 0 10px;font-weight:400}
+
+ /* 할 일 */
+ ul.tasks{list-style:none;margin:0;padding:0;border-top:1px solid var(--edge)}
+ ul.tasks li{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:baseline;
+   padding:9px 2px;border-bottom:1px solid var(--edge);font-size:13.5px}
+ .who{font-family:var(--mono);font-size:10.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .tt{color:var(--ink)}
+ ul.tasks em{font-family:var(--mono);font-size:11px;color:var(--faint);font-style:normal;white-space:nowrap}
+ ul.tasks em.late{color:var(--alarm)}
+ .blk{font-family:var(--mono);font-size:9.5px;color:var(--warn);border:1px solid var(--warn);
+   border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:2px}
+
+ /* 업무 트래커 */
+ .projs{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+ .pj{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:13px 14px}
+ .pj.over{border-color:color-mix(in srgb,var(--alarm) 45%,var(--edge))}
+ .ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14.5px}
+ .dd{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap}
+ .dd.near{color:var(--warn);font-weight:700} .dd.over{color:var(--alarm);font-weight:700}
+ .dd.none{color:var(--faint)}
+ .pbar{height:5px;background:var(--panel2);border-radius:3px;overflow:hidden;margin:8px 0 7px}
+ .pbar i{display:block;height:100%;background:var(--link)}
+ .pnow{font-size:12px;color:var(--dim)}
+ .pnext{font-size:12.5px;margin-top:4px}
+ .pmeta{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:5px}
+
+ /* 브랜드 라인 */
+ .brands{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+ .bd{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:14px 15px}
+ .bd.hot{border-color:color-mix(in srgb,var(--alarm) 40%,var(--edge))}
+ .bh{display:flex;justify-content:space-between;align-items:baseline;font-size:16px}
+ .bh span{font-family:var(--mono);font-size:12px;color:var(--dim)}
+ .bar{display:flex;height:9px;border-radius:5px;overflow:hidden;margin:9px 0 6px;background:var(--panel2)}
+ .bar i{display:block}
+ .s-none{background:color-mix(in srgb,var(--faint) 40%,transparent)}
+ .s-guide{background:var(--link)} .s-qc{background:var(--warn)} .s-retro{background:var(--calm)}
+ .bl{font-family:var(--mono);font-size:11px;color:var(--dim)}
+ .bs{margin-top:6px;font-size:12px;color:var(--alarm);font-weight:600}
+
+ /* 지금 돌아가는 일 */
+ .rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+ .rm{background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:10px 12px}
+ .rm.wait{border-color:color-mix(in srgb,var(--warn) 50%,var(--edge));
+   background:linear-gradient(180deg,color-mix(in srgb,var(--warn) 6%,var(--panel)),var(--panel))}
+ .rt{font-size:13px;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+ .rt em{font-family:var(--mono);font-size:10px;color:var(--faint);font-style:normal;margin-left:auto}
+ .rm p{margin:4px 0 0;font-size:11.5px;color:var(--dim);line-height:1.45;
+   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+ /* ③ 영역 */
+ .areas{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+ .area{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:13px 14px}
+ .area.hot{border-color:color-mix(in srgb,var(--warn) 45%,var(--edge))}
+ .ah{font-size:14px;font-weight:700;margin-bottom:3px}
+ .area p{margin:0;font-size:12px;color:var(--dim);font-family:var(--mono)}
+ .doors{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+ .doors a{font-size:11.5px;text-decoration:none;color:var(--link);border:1px solid var(--edge);
+   background:var(--panel2);border-radius:7px;padding:3px 8px;transition:border-color .15s}
+ .doors a:hover{border-color:var(--link)}
+
+ details{margin-top:26px;border-top:1px solid var(--edge);padding-top:12px}
+ summary{cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.18em;
+   color:var(--faint);text-transform:uppercase;list-style:none}
+ summary::-webkit-details-marker{display:none}
+ summary::before{content:"▸ ";color:var(--link)}
+ details[open] summary::before{content:"▾ "}
+ .dg{margin-top:14px} .dg h4{margin:0 0 6px;font-size:11px;color:var(--faint);font-weight:400;font-family:var(--mono)}
+ .note{margin-top:22px;padding:11px 13px;border:1px solid var(--edge);border-left:2px solid var(--warn);
+   border-radius:9px;font-size:12.5px;color:var(--dim);background:var(--panel)}
+ footer{margin-top:30px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+ @media (max-width:520px){ul.tasks li{grid-template-columns:1fr auto} .who{display:none}}
+
+
+/* 리포트 전용 보조 스타일 */
+body { overflow-x:hidden; }
+.report { max-width:1040px; margin:0 auto; padding:22px 18px 72px; }
+.eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--faint); }
+.hero.report-hero { margin-top:18px; }
+.hero h1 { margin:8px 0 10px; font-size:clamp(25px,4.5vw,42px); letter-spacing:-.045em; line-height:1.15; }
+.conclusion { margin:0; font-size:14px; color:var(--dim); }
+.mono, .num, .metric strong, .metric-money, .metric-note, th { font-family:var(--mono); }
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0 30px; }
+.metric { background:var(--panel); border:1px solid var(--edge); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:4px; min-width:0; }
+.metric.hot { border-color:color-mix(in srgb,var(--warn) 50%,var(--edge)); }
+.metric-label { color:var(--faint); font-size:12px; }
+.metric strong { font-size:28px; line-height:1.1; letter-spacing:-.04em; }
+.metric strong small { font-family:var(--sans); font-size:13px; font-weight:500; margin-left:3px; }
+.metric-money { color:var(--link); font-size:14px; }
+.metric-note { color:var(--faint); font-size:10px; }
+.weeks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.week { background:var(--panel); border:1px solid var(--edge); border-radius:12px; padding:13px 14px; }
+.week h3 { margin:0 0 13px; font-size:14px; }
+.week-row + .week-row { margin-top:12px; }
+.week-label { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; color:var(--dim); }
+.week-label small { color:var(--warn); font-size:10px; }
+.track { height:8px; margin-top:6px; border-radius:5px; overflow:hidden; background:var(--panel2); }
+.track i { display:block; height:100%; border-radius:5px; }
+.track i.팝업 { background:var(--warn); } .track i.온라인 { background:var(--link); }
+.table-scroll { overflow-x:auto; border:1px solid var(--edge); border-radius:10px; background:var(--panel); }
+table { width:100%; border-collapse:collapse; min-width:580px; font-size:12.5px; }
+th, td { padding:9px 11px; border-bottom:1px solid var(--edge); text-align:left; vertical-align:middle; }
+th { color:var(--faint); font-size:10px; font-weight:400; white-space:nowrap; }
+.table-scroll th:first-child, .table-scroll td:first-child { position:sticky; left:0; background:var(--panel); box-shadow:1px 0 0 var(--edge); z-index:1; }
+.table-scroll th:first-child { z-index:2; }
+tbody tr:last-child td { border-bottom:0; }
+td.num { text-align:right; white-space:nowrap; }
+.cell-money, .cell-qty { display:block; }
+.cell-money { font-weight:700; }
+.cell-qty { color:var(--dim); font-size:10px; font-weight:400; }
+.cell-zero { color:var(--faint); }
+td.strong { font-weight:700; color:var(--link); }
+td.product-name { min-width:210px; }
+td.product-name small { display:block; color:var(--faint); font-size:10px; margin-top:2px; }
+td.product-name a { display:block; color:var(--link); font-size:10px; margin-top:2px; text-decoration:none; }
+.subgrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.free { border-left:2px solid var(--warn); background:var(--panel); border-radius:9px; padding:12px 14px; color:var(--dim); font-size:12px; }
+.free strong { color:var(--ink); }
+.free .free-title { color:var(--ink); font-weight:700; margin-bottom:4px; }
+.free-table { min-width:460px; }
+.total-row td { font-weight:700; border-top:1px solid var(--ink); border-bottom:0; }
+.week-break td { border-top:1px solid var(--faint); }
+.final-strip { margin:-18px 0 30px; padding:12px 14px; border-top:1px solid var(--edge); border-bottom:1px solid var(--edge); color:var(--ink); font-family:var(--mono); font-size:13px; }
+.analysis { margin-top:34px; }
+.analysis h3 { margin:28px 0 10px; font-size:13px; }
+.source-line, .notice { color:var(--dim); font-size:12px; }
+.plain-lines { color:var(--dim); font-size:12px; }
+.plain-lines p { margin:8px 0; }
+.ad-creatives { margin-top:34px; }
+.ad-intro { color:var(--dim); font-size:11px; }
+.ad-intro p { margin:6px 0; }
+.ad-cards { display:grid; gap:12px; margin-top:14px; }
+.ad-card { min-width:0; padding:13px 14px; background:var(--panel); border:1px solid var(--edge); border-radius:12px; }
+.ad-meta, .ad-button, .ad-library { font-family:var(--mono); font-size:10px; color:var(--faint); }
+.ad-gallery { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:8px; margin:10px 0 12px; padding-bottom:4px; overscroll-behavior-x:contain; }
+.ad-gallery img { display:block; flex:0 0 150px; width:150px; height:auto; border-radius:8px; scroll-snap-align:start; }
+.ad-copy { color:var(--dim); font-size:12px; line-height:1.55; }
+.ad-copy p { margin:3px 0; }
+.ad-copy strong { color:var(--ink); }
+.ad-button { margin-top:10px; color:var(--dim); }
+.ad-library { margin-top:4px; }
+figure { margin:18px 0; }
+figure img { display:block; max-width:100%; }
+figcaption { margin-top:6px; color:var(--faint); font-size:11px; }
+.criteria { margin-top:30px; }
+.criteria ul { margin:10px 0 0; padding-left:18px; color:var(--dim); font-size:11px; }
+.criteria li + li { margin-top:5px; }
+.date-table { min-width:450px; table-layout:fixed; }
+.date-table th:nth-child(1), .date-table td:nth-child(1) { width:64px; }
+.date-table th:nth-child(2), .date-table td:nth-child(2) { width:88px; }
+.date-table th:nth-child(3), .date-table td:nth-child(3) { width:88px; }
+.date-table th:nth-child(4), .date-table td:nth-child(4) { width:95px; }
+.date-table th:nth-child(5), .date-table td:nth-child(5) { width:115px; }
+@media (max-width:680px) { .metrics, .weeks, .subgrid { grid-template-columns:1fr; } .report { padding-left:12px; padding-right:12px; } .hero.report-hero { padding-left:18px; padding-right:18px; } }
+@media (max-width:680px) { .date-table th, .date-table td { padding-left:5px; padding-right:5px; } .date-table { font-size:11px; } }
+@media (min-width:1100px) { .ad-gallery img { flex-basis:180px; width:180px; } }
+</style>
+</head>
+<body>
+<main class="report">
+  <div class="eyebrow">DEADFLT / SALES REPORT</div>
+  <section class="hero report-hero calm">
+    <h1>데드폴트 성수 팝업·온라인 판매 (10/8~10/31)</h1>
+    <p class="conclusion">10/8~10/31 동안 489개, 홈페이지 판매가로 환산하면 약 3,029만 원어치가 팔렸습니다(팝업 약 2,560만 · 온라인 약 469만).</p>
+  </section>
+
+  <section class="metrics" aria-label="전체 채널 요약"><article class="metric hot"><span class="metric-label">전체</span><strong>489<small>개</small></strong><span class="metric-money">30,289,450원</span><span class="metric-note">정가 기준 60,578,900원</span></article><article class="metric"><span class="metric-label">팝업</span><strong>428<small>개</small></strong><span class="metric-money">25,603,700원</span><span class="metric-note">정가 기준 51,207,400원</span></article><article class="metric"><span class="metric-label">온라인</span><strong>61<small>개</small></strong><span class="metric-money">4,685,750원</span><span class="metric-note">정가 기준 9,371,500원</span></article></section>
+  <div class="final-strip">최종 합계 · 489개 · 30,289,450원 (팝업·온라인 나눔: 팝업 428개 · 25,603,700원 / 온라인 61개 · 4,685,750원 )</div>
+
+  <h2>주차별</h2>
+  <div class="table-scroll"><table><thead><tr><th>주차</th><th>팝업</th><th>온라인</th><th>합계</th></tr></thead><tbody><tr><td>1주차 (10/8~14)</td><td class="num"><span class="cell-money">9,302,200원</span><span class="cell-qty">158개</span></td><td class="num"><span class="cell-money">795,000원</span><span class="cell-qty">10개</span></td><td class="num strong"><span class="cell-money">10,097,200원</span><span class="cell-qty">168개</span></td></tr><tr><td>2주차 (10/15~21)</td><td class="num"><span class="cell-money">8,053,500원</span><span class="cell-qty">149개</span></td><td class="num"><span class="cell-money">345,350원</span><span class="cell-qty">6개</span></td><td class="num strong"><span class="cell-money">8,398,850원</span><span class="cell-qty">155개</span></td></tr><tr><td>3주차 (10/22~28)</td><td class="num"><span class="cell-money">7,460,400원</span><span class="cell-qty">107개</span></td><td class="num"><span class="cell-money">3,218,400원</span><span class="cell-qty">41개</span></td><td class="num strong"><span class="cell-money">10,678,800원</span><span class="cell-qty">148개</span></td></tr><tr><td>4주차 (10/29~31)</td><td class="num"><span class="cell-money">787,600원</span><span class="cell-qty">14개</span></td><td class="num"><span class="cell-money">327,000원</span><span class="cell-qty">4개</span></td><td class="num strong"><span class="cell-money">1,114,600원</span><span class="cell-qty">18개</span></td></tr><tr class="total-row"><td>합계</td><td></td><td></td><td class="num strong"><span class="cell-money">30,289,450원</span><span class="cell-qty">489개</span></td></tr></tbody></table></div>
+
+  <h2>상품별</h2>
+  <div class="table-scroll"><table><thead><tr><th>상품</th><th>수량</th><th>정가</th><th>판매가</th><th>환산 매출</th></tr></thead><tbody><tr><td class="product-name">후드 집업<a href="https://www.deadflt.com/shop/?idx=36" target="_blank" rel="noreferrer">가격표</a></td><td class="num">138개</td><td class="num">172,000원</td><td class="num">86,000원</td><td class="num strong">11,868,000원</td></tr><tr><td class="product-name">후드<a href="https://www.deadflt.com/shop/?idx=33" target="_blank" rel="noreferrer">가격표</a></td><td class="num">128개</td><td class="num">158,000원</td><td class="num">79,000원</td><td class="num strong">10,112,000원</td></tr><tr><td class="product-name">조거 팬츠<a href="https://www.deadflt.com/shop/?idx=39" target="_blank" rel="noreferrer">가격표</a></td><td class="num">68개</td><td class="num">138,000원</td><td class="num">69,000원</td><td class="num strong">4,692,000원</td></tr><tr><td class="product-name">티셔츠 The Edge Comes With Years<a href="https://www.deadflt.com/shop/?idx=9" target="_blank" rel="noreferrer">가격표</a></td><td class="num">42개</td><td class="num">78,400원</td><td class="num">39,200원</td><td class="num strong">1,646,400원</td></tr><tr><td class="product-name">티셔츠 The Weight That Holds Him Up<a href="https://www.deadflt.com/shop/?idx=7" target="_blank" rel="noreferrer">가격표</a></td><td class="num">21개</td><td class="num">78,400원</td><td class="num">39,200원</td><td class="num strong">823,200원</td></tr><tr><td class="product-name">티셔츠 Beneath the Composure, an Ocean<small>홈페이지에 없음 — 같은 티셔츠 값으로 봄</small></td><td class="num">11개</td><td class="num">78,400원</td><td class="num">39,200원</td><td class="num strong">431,200원</td></tr><tr><td class="product-name">티셔츠 Time Walks Backwards<small>홈페이지에 없음 — 같은 티셔츠 값으로 봄</small></td><td class="num">11개</td><td class="num">78,400원</td><td class="num">39,200원</td><td class="num strong">431,200원</td></tr><tr><td class="product-name">5-Panel 캡<a href="https://www.deadflt.com/shop/?idx=11" target="_blank" rel="noreferrer">가격표</a></td><td class="num">11개</td><td class="num">51,900원</td><td class="num">25,950원</td><td class="num strong">285,450원</td></tr><tr><td class="product-name">크루 삭스<small>홈페이지에 없음</small></td><td class="num">59개</td><td class="num">—</td><td class="num">—</td><td class="num strong">0원</td></tr><tr class="total-row"><td class="product-name">합계</td><td class="num">489개</td><td class="num"></td><td class="num"></td><td class="num strong">30,289,450원</td></tr></tbody></table></div>
+
+  <h2>상품·색상별</h2>
+  <div class="table-scroll"><table><thead><tr><th>상품</th><th>색상</th><th>수량</th><th>환산 매출</th></tr></thead><tbody><tr><td>후드 집업</td><td>멜란지</td><td class="num">45개</td><td class="num">3,870,000원</td></tr><tr><td>후드 집업</td><td>블랙</td><td class="num">71개</td><td class="num">6,106,000원</td></tr><tr><td>후드 집업</td><td>아이보리</td><td class="num">22개</td><td class="num">1,892,000원</td></tr><tr><td>후드</td><td>멜란지</td><td class="num">43개</td><td class="num">3,397,000원</td></tr><tr><td>후드</td><td>블랙</td><td class="num">74개</td><td class="num">5,846,000원</td></tr><tr><td>조거 팬츠</td><td>멜란지</td><td class="num">24개</td><td class="num">1,656,000원</td></tr><tr><td>조거 팬츠</td><td>블랙</td><td class="num">34개</td><td class="num">2,346,000원</td></tr><tr><td>조거 팬츠</td><td>아이보리</td><td class="num">10개</td><td class="num">690,000원</td></tr><tr><td>크루 삭스</td><td>-</td><td class="num">59개</td><td class="num">0원</td></tr><tr><td>5-Panel 캡</td><td>그린</td><td class="num">2개</td><td class="num">51,900원</td></tr><tr><td>티셔츠 The Edge Comes With Years</td><td>블랙</td><td class="num">42개</td><td class="num">1,646,400원</td></tr><tr><td>5-Panel 캡</td><td>레드</td><td class="num">2개</td><td class="num">51,900원</td></tr><tr><td>5-Panel 캡</td><td>오렌지</td><td class="num">1개</td><td class="num">25,950원</td></tr><tr><td>티셔츠 Beneath the Composure, an Ocean</td><td>화이트</td><td class="num">11개</td><td class="num">431,200원</td></tr><tr><td>티셔츠 The Weight That Holds Him Up</td><td>화이트</td><td class="num">21개</td><td class="num">823,200원</td></tr><tr><td>티셔츠 Time Walks Backwards</td><td>블랙</td><td class="num">11개</td><td class="num">431,200원</td></tr><tr><td>후드</td><td>아이보리</td><td class="num">11개</td><td class="num">869,000원</td></tr><tr><td>5-Panel 캡</td><td>블랙</td><td class="num">2개</td><td class="num">51,900원</td></tr><tr><td>5-Panel 캡</td><td>블루</td><td class="num">2개</td><td class="num">51,900원</td></tr><tr><td>5-Panel 캡</td><td>옐로우</td><td class="num">1개</td><td class="num">25,950원</td></tr><tr><td>5-Panel 캡</td><td>Black / Red</td><td class="num">1개</td><td class="num">25,950원</td></tr><tr class="total-row"><td>합계</td><td></td><td class="num">489개</td><td class="num strong">30,289,450원</td></tr></tbody></table></div>
+
+  <h2>사이즈별 · 전체</h2>
+  <div class="table-scroll"><table><thead><tr><th>상품</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>프리</th><th>미기재</th></tr></thead><tbody><tr><td class="product-name">전체</td><td class="num">134</td><td class="num">113</td><td class="num">146</td><td class="num">22</td><td class="num">70</td><td class="num">4</td></tr><tr class="total-row"><td class="product-name">합계</td><td class="num">134</td><td class="num">113</td><td class="num">146</td><td class="num">22</td><td class="num">70</td><td class="num">4</td></tr></tbody></table></div>
+  <h2>사이즈별 · 상품별</h2>
+  <div class="table-scroll"><table><thead><tr><th>상품</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>프리</th><th>미기재</th></tr></thead><tbody><tr><td class="product-name">후드 집업</td><td class="num">41</td><td class="num">44</td><td class="num">50</td><td class="num">0</td><td class="num">0</td><td class="num">3</td></tr><tr><td class="product-name">후드</td><td class="num">43</td><td class="num">39</td><td class="num">46</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="product-name">조거 팬츠</td><td class="num">31</td><td class="num">15</td><td class="num">21</td><td class="num">0</td><td class="num">0</td><td class="num">1</td></tr><tr><td class="product-name">크루 삭스</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">59</td><td class="num">0</td></tr><tr><td class="product-name">5-Panel 캡</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">11</td><td class="num">0</td></tr><tr><td class="product-name">티셔츠 The Edge Comes With Years</td><td class="num">5</td><td class="num">10</td><td class="num">15</td><td class="num">12</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="product-name">티셔츠 Beneath the Composure, an Ocean</td><td class="num">6</td><td class="num">0</td><td class="num">3</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="product-name">티셔츠 The Weight That Holds Him Up</td><td class="num">6</td><td class="num">2</td><td class="num">8</td><td class="num">5</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="product-name">티셔츠 Time Walks Backwards</td><td class="num">2</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr><tr class="total-row"><td class="product-name">합계</td><td class="num">134</td><td class="num">113</td><td class="num">146</td><td class="num">22</td><td class="num">70</td><td class="num">4</td></tr></tbody></table></div>
+
+  <h2>날짜별</h2>
+  <div class="table-scroll"><table class="date-table"><thead><tr><th>날짜</th><th>팝업</th><th>온라인</th><th>하루 합계</th><th>누적 (원)</th></tr></thead><tbody><tr><td class="date">10/8(목)</td><td class="num"><span class="cell-money">1,848,000원</span><span class="cell-qty">27개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">1,848,000원</span><span class="cell-qty">27개</span></td><td class="num">1,848,000원</td></tr><tr><td class="date">10/9(금)</td><td class="num"><span class="cell-money">1,876,350원</span><span class="cell-qty">33개</span></td><td class="num"><span class="cell-money">172,000원</span><span class="cell-qty">2개</span></td><td class="num strong"><span class="cell-money">2,048,350원</span><span class="cell-qty">35개</span></td><td class="num">3,896,350원</td></tr><tr><td class="date">10/10(토)</td><td class="num"><span class="cell-money">932,600원</span><span class="cell-qty">19개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">932,600원</span><span class="cell-qty">19개</span></td><td class="num">4,828,950원</td></tr><tr><td class="date">10/11(일)</td><td class="num"><span class="cell-money">1,614,650원</span><span class="cell-qty">37개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">1,614,650원</span><span class="cell-qty">37개</span></td><td class="num">6,443,600원</td></tr><tr><td class="date">10/12(월)</td><td class="num"><span class="cell-money">1,090,400원</span><span class="cell-qty">15개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">1,090,400원</span><span class="cell-qty">15개</span></td><td class="num">7,534,000원</td></tr><tr><td class="date">10/13(화)</td><td class="num"><span class="cell-money">1,177,200원</span><span class="cell-qty">15개</span></td><td class="num"><span class="cell-money">234,000원</span><span class="cell-qty">3개</span></td><td class="num strong"><span class="cell-money">1,411,200원</span><span class="cell-qty">18개</span></td><td class="num">8,945,200원</td></tr><tr><td class="date">10/14(수)</td><td class="num"><span class="cell-money">763,000원</span><span class="cell-qty">12개</span></td><td class="num"><span class="cell-money">389,000원</span><span class="cell-qty">5개</span></td><td class="num strong"><span class="cell-money">1,152,000원</span><span class="cell-qty">17개</span></td><td class="num">10,097,200원</td></tr><tr class="week-break"><td class="date">10/15(목)</td><td class="num"><span class="cell-money">693,800원</span><span class="cell-qty">12개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">693,800원</span><span class="cell-qty">12개</span></td><td class="num">10,791,000원</td></tr><tr><td class="date">10/16(금)</td><td class="num"><span class="cell-money">1,409,300원</span><span class="cell-qty">23개</span></td><td class="num"><span class="cell-money">86,000원</span><span class="cell-qty">1개</span></td><td class="num strong"><span class="cell-money">1,495,300원</span><span class="cell-qty">24개</span></td><td class="num">12,286,300원</td></tr><tr><td class="date">10/17(토)</td><td class="num"><span class="cell-money">1,289,400원</span><span class="cell-qty">17개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">1,289,400원</span><span class="cell-qty">17개</span></td><td class="num">13,575,700원</td></tr><tr><td class="date">10/18(일)</td><td class="num"><span class="cell-money">334,500원</span><span class="cell-qty">37개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">334,500원</span><span class="cell-qty">37개</span></td><td class="num">13,910,200원</td></tr><tr><td class="date">10/19(월)</td><td class="num"><span class="cell-money">2,381,150원</span><span class="cell-qty">34개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">2,381,150원</span><span class="cell-qty">34개</span></td><td class="num">16,291,350원</td></tr><tr><td class="date">10/20(화)</td><td class="num"><span class="cell-money">732,150원</span><span class="cell-qty">10개</span></td><td class="num"><span class="cell-money">233,400원</span><span class="cell-qty">4개</span></td><td class="num strong"><span class="cell-money">965,550원</span><span class="cell-qty">14개</span></td><td class="num">17,256,900원</td></tr><tr><td class="date">10/21(수)</td><td class="num"><span class="cell-money">1,213,200원</span><span class="cell-qty">16개</span></td><td class="num"><span class="cell-money">25,950원</span><span class="cell-qty">1개</span></td><td class="num strong"><span class="cell-money">1,239,150원</span><span class="cell-qty">17개</span></td><td class="num">18,496,050원</td></tr><tr class="week-break"><td class="date">10/22(목)</td><td class="num"><span class="cell-money">917,400원</span><span class="cell-qty">15개</span></td><td class="num"><span class="cell-money">79,000원</span><span class="cell-qty">1개</span></td><td class="num strong"><span class="cell-money">996,400원</span><span class="cell-qty">16개</span></td><td class="num">19,492,450원</td></tr><tr><td class="date">10/23(금)</td><td class="num"><span class="cell-money">627,800원</span><span class="cell-qty">10개</span></td><td class="num"><span class="cell-money">233,400원</span><span class="cell-qty">4개</span></td><td class="num strong"><span class="cell-money">861,200원</span><span class="cell-qty">14개</span></td><td class="num">20,353,650원</td></tr><tr><td class="date">10/24(토)</td><td class="num"><span class="cell-money">1,391,400원</span><span class="cell-qty">21개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">1,391,400원</span><span class="cell-qty">21개</span></td><td class="num">21,745,050원</td></tr><tr><td class="date">10/25(일)</td><td class="num"><span class="cell-money">1,517,200원</span><span class="cell-qty">22개</span></td><td class="num"><span class="cell-money">1,200,000원</span><span class="cell-qty">15개</span></td><td class="num strong"><span class="cell-money">2,717,200원</span><span class="cell-qty">37개</span></td><td class="num">24,462,250원</td></tr><tr><td class="date">10/26(월)</td><td class="num"><span class="cell-money">581,000원</span><span class="cell-qty">7개</span></td><td class="num"><span class="cell-money">155,000원</span><span class="cell-qty">2개</span></td><td class="num strong"><span class="cell-money">736,000원</span><span class="cell-qty">9개</span></td><td class="num">25,198,250원</td></tr><tr><td class="date">10/27(화)</td><td class="num"><span class="cell-money">1,516,400원</span><span class="cell-qty">20개</span></td><td class="num"><span class="cell-money">657,000원</span><span class="cell-qty">8개</span></td><td class="num strong"><span class="cell-money">2,173,400원</span><span class="cell-qty">28개</span></td><td class="num">27,371,650원</td></tr><tr><td class="date">10/28(수)</td><td class="num"><span class="cell-money">909,200원</span><span class="cell-qty">12개</span></td><td class="num"><span class="cell-money">894,000원</span><span class="cell-qty">11개</span></td><td class="num strong"><span class="cell-money">1,803,200원</span><span class="cell-qty">23개</span></td><td class="num">29,174,850원</td></tr><tr class="week-break"><td class="date">10/29(목)</td><td class="num"><span class="cell-money">787,600원</span><span class="cell-qty">14개</span></td><td class="num"><span class="cell-zero">–</span></td><td class="num strong"><span class="cell-money">787,600원</span><span class="cell-qty">14개</span></td><td class="num">29,962,450원</td></tr><tr><td class="date">10/30(금)</td><td class="num"><span class="cell-zero">–</span></td><td class="num"><span class="cell-money">327,000원</span><span class="cell-qty">4개</span></td><td class="num strong"><span class="cell-money">327,000원</span><span class="cell-qty">4개</span></td><td class="num">30,289,450원</td></tr><tr class="total-row"><td class="date">최종 합계</td><td class="num"><span class="cell-money">25,603,700원</span><span class="cell-qty">428개</span></td><td class="num"><span class="cell-money">4,685,750원</span><span class="cell-qty">61개</span></td><td class="num strong"><span class="cell-money">30,289,450원</span><span class="cell-qty">489개</span></td><td class="num">30,289,450원</td></tr></tbody></table></div>
+
+  <h2>무료 증정</h2>
+  <section class="free">
+    <div class="free-title">10/25 헌후드 장례식 참여자 103명에게 무료 증정(재고에서는 빠짐) · 103개</div>
+    <div>10/25 헌후드 장례식 참여자 103명에게 무료 증정(재고에서는 빠짐) — 판매가 기준·정가 기준 금액. <strong>매출에는 안 넣음</strong>.</div>
+    <div class="table-scroll" style="margin-top:10px"><table class="free-table"><thead><tr><th>상품</th><th>수량</th><th>판매가 기준</th><th>정가 기준</th></tr></thead><tbody>
+      <tr><td>후드 집업</td><td class="num">73개</td><td class="num">6,278,000원</td><td class="num">12,556,000원</td></tr><tr><td>후드</td><td class="num">30개</td><td class="num">2,370,000원</td><td class="num">4,740,000원</td></tr><tr class="total-row"><td>합계</td><td class="num">103개</td><td class="num">8,648,000원</td><td class="num">17,296,000원</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section class="ad-creatives">
+    <h2>데드폴트 메타 광고 소재 (메타 광고 라이브러리)</h2>
+    <div class="ad-intro"><p>메타 광고 라이브러리(한국)에서 「deadflt」·「데드폴트」로 찾은 광고 4개 — 모두 10/29 게재 시작, 11/1 20시 기준 켜져 있음. 4개 모두 사진 8장을 넘겨 보는 캐러셀.</p><p>보고서 기간(10/19~28)의 캐러셀·패러디(모나리자)·룩북 광고는 이미 꺼져서 한국 광고 라이브러리에는 안 보임(메타는 꺼진 일반 광고를 한국에서 보여 주지 않음). 그 소재 원본은 광고를 올린 계정의 광고 관리자에서 받아야 함.</p></div>
+    <div class="ad-cards"><article class="ad-card">
+      <div class="ad-meta">광고 1 · 10/29 시작 · 활성</div>
+      <div class="ad-gallery" aria-label="광고 1 그림"><img src="ads/ad1_1.jpg" alt="광고 1 소재 1" loading="lazy"><img src="ads/ad1_2.jpg" alt="광고 1 소재 2" loading="lazy"><img src="ads/ad1_3.jpg" alt="광고 1 소재 3" loading="lazy"><img src="ads/ad1_4.jpg" alt="광고 1 소재 4" loading="lazy"><img src="ads/ad1_5.jpg" alt="광고 1 소재 5" loading="lazy"><img src="ads/ad1_6.jpg" alt="광고 1 소재 6" loading="lazy"><img src="ads/ad1_7.jpg" alt="광고 1 소재 7" loading="lazy"><img src="ads/ad1_8.jpg" alt="광고 1 소재 8" loading="lazy"></div>
+      <div class="ad-copy"><p><strong>후드가 혼자 서 있습니다. 찬바람 부는 날, 후드를 끝까지.</strong></p><p>Blind Spot Series — 기모 후드 / 후드 집업</p><p>힘 있는 원단이 세운 후드, 어깨부터 넉넉하게 떨어지는 오버핏.</p><p>Melange 🩶 Ivory 💛 Black 🖤</p><p>공식몰 50% — 11월 8일까지</p><p>후드 79,000원 · 집업 86,000원</p><p>deadflt.com</p><p>#데드폴트 #DEADFLT #기모후드 #후드집업 #겨울후드</p></div>
+      <div class="ad-button">버튼: Shop Now → deadflt.com</div>
+      <div class="ad-library">라이브러리ID: 1812334643126427</div>
+    </article><article class="ad-card">
+      <div class="ad-meta">광고 2 · 10/29 시작 · 활성</div>
+      <div class="ad-gallery" aria-label="광고 2 그림"><img src="ads/ad2_1.jpg" alt="광고 2 소재 1" loading="lazy"><img src="ads/ad2_2.jpg" alt="광고 2 소재 2" loading="lazy"><img src="ads/ad2_3.jpg" alt="광고 2 소재 3" loading="lazy"><img src="ads/ad2_4.jpg" alt="광고 2 소재 4" loading="lazy"><img src="ads/ad2_5.jpg" alt="광고 2 소재 5" loading="lazy"><img src="ads/ad2_6.jpg" alt="광고 2 소재 6" loading="lazy"><img src="ads/ad2_7.jpg" alt="광고 2 소재 7" loading="lazy"><img src="ads/ad2_8.jpg" alt="광고 2 소재 8" loading="lazy"></div>
+      <div class="ad-copy"><p><strong>안쪽부터 따뜻합니다.</strong></p><p>Blind Spot Series — 기모 후드 / 후드 집업</p><p>550g 헤비웨이트, 소매 끝까지 포근한 기모 안감.</p><p>Melange 🩶 Ivory 💛 Black 🖤</p><p>공식몰 50% — 11월 8일까지</p><p>후드 79,000원 · 집업 86,000원</p><p>deadflt.com</p><p>#데드폴트 #DEADFLT #기모후드 #후드집업 #겨울후드</p></div>
+      <div class="ad-button">버튼: Shop Now → deadflt.com</div>
+      <div class="ad-library">라이브러리ID: 2247537416171915</div>
+    </article><article class="ad-card">
+      <div class="ad-meta">광고 3 · 10/29 시작 · 활성</div>
+      <div class="ad-gallery" aria-label="광고 3 그림"><img src="ads/ad3_1.jpg" alt="광고 3 소재 1" loading="lazy"><img src="ads/ad3_2.jpg" alt="광고 3 소재 2" loading="lazy"><img src="ads/ad3_3.jpg" alt="광고 3 소재 3" loading="lazy"><img src="ads/ad3_4.jpg" alt="광고 3 소재 4" loading="lazy"><img src="ads/ad3_5.jpg" alt="광고 3 소재 5" loading="lazy"><img src="ads/ad3_6.jpg" alt="광고 3 소재 6" loading="lazy"><img src="ads/ad3_7.jpg" alt="광고 3 소재 7" loading="lazy"><img src="ads/ad3_8.jpg" alt="광고 3 소재 8" loading="lazy"></div>
+      <div class="ad-copy"><p><strong>위아래, 같은 온도로.</strong></p><p>Blind Spot Series — 기모 후드 / 후드 집업 / 조거팬츠</p><p>같은 원단, 같은 색으로 맞춰 입는 셋업.</p><p>Melange 🩶 Ivory 💛 Black 🖤</p><p>공식몰 50% — 11월 8일까지</p><p>후드 79,000원 · 집업 86,000원 · 조거 69,000원</p><p>deadflt.com</p><p>#데드폴트 #DEADFLT #기모후드 #후드집업 #겨울후드</p></div>
+      <div class="ad-button">버튼: Shop Now → deadflt.com</div>
+      <div class="ad-library">라이브러리ID: 2033696190670194</div>
+    </article><article class="ad-card">
+      <div class="ad-meta">광고 4 · 10/29 시작 · 활성</div>
+      <div class="ad-gallery" aria-label="광고 4 그림"><img src="ads/ad4_1.jpg" alt="광고 4 소재 1" loading="lazy"><img src="ads/ad4_2.jpg" alt="광고 4 소재 2" loading="lazy"><img src="ads/ad4_3.jpg" alt="광고 4 소재 3" loading="lazy"><img src="ads/ad4_4.jpg" alt="광고 4 소재 4" loading="lazy"><img src="ads/ad4_5.jpg" alt="광고 4 소재 5" loading="lazy"><img src="ads/ad4_6.jpg" alt="광고 4 소재 6" loading="lazy"><img src="ads/ad4_7.jpg" alt="광고 4 소재 7" loading="lazy"><img src="ads/ad4_8.jpg" alt="광고 4 소재 8" loading="lazy"></div>
+      <div class="ad-copy"><p><strong>찬바람 부는 날, 후드를 끝까지.</strong></p><p>Blind Spot Series — 기모 후드 / 후드 집업</p><p>혼자 서는 후드, 소매 끝까지 포근한 기모 안감.</p><p>Melange 🩶 Ivory 💛 Black 🖤</p><p>공식몰 50% — 11월 8일까지</p><p>후드 79,000원 · 집업 86,000원</p><p>deadflt.com</p><p>#데드폴트 #DEADFLT #기모후드 #후드집업 #겨울후드</p></div>
+      <div class="ad-button">버튼: Shop Now → deadflt.com</div>
+      <div class="ad-library">라이브러리ID: 1596335105056857</div>
+    </article></div>
+  </section>
+
+  <section class="analysis">
+    <h2>광고와 실제 결제</h2>
+    <p class="source-line">데드폴트 「헌후드 장례식 캠페인 결과 공유 및 다음 프로모션 제안」(2026-10-28) 원문 숫자 그대로</p>
+    <div class="plain-lines"><p>온라인 일평균 매출이 9만 원대에서 42만 원대로 4.6배 늘었습니다. 구매의 대부분은 제품이 직접 보이는 메타 캐러셀 광고에서 나왔습니다.</p><p>바이럴 릴스와 현장 이벤트는 관심과 방문을 크게 끌어올렸습니다(인스타 프로필 유입 약 4배, 이벤트 참여 103명). 다만 이 관심이 구매로 이어지는 연결은 약했습니다.</p><p>다음 프로모션의 과제는 재미로 모은 관심을 제품과 가격으로 연결하는 것입니다.</p></div>
+    <div class="table-scroll"><table class=""><thead><tr><th>일정</th><th>내용</th></tr></thead><tbody><tr><td>10/8(목)</td><td>성수 팝업 오픈, 홈페이지도 동일하게 50% 할인</td></tr><tr><td>10/19~20</td><td>메타 광고 소재 세팅 (패러디 모나리자·룩북, 캐러셀)</td></tr><tr><td>10/24(토) 오후</td><td>바이럴 릴스 시작, 메타 캐러셀·모나리자 광고 확대</td></tr><tr><td>10/25(일)</td><td>팝업 현장 이벤트 헌후드 장례식, 103명 참여</td></tr></tbody></table></div>
+    <p class="notice">바이럴 릴스와 메타 광고 확대가 같은 날 시작되어, 이후 매출 변화는 두 활동의 합산 효과입니다.</p>
+    <figure><img src="chart_daily.png" style="width:100%;height:auto" alt="일별 매출(팝업+온라인), 10/24 오후 바이럴 릴스·메타 광고 확대 시작"><figcaption>일별 매출(팝업+온라인), 10/24 오후 바이럴 릴스·메타 광고 확대 시작</figcaption></figure>
+    <div class="table-scroll"><table class=""><thead><tr><th>구분</th><th>직전 7일 (10/17–10/23)</th><th>이후 (10/24–)</th><th>변화</th></tr></thead><tbody><tr><td>온라인 일평균 매출</td><td>93,536원</td><td>428,800원</td><td>4.6배</td></tr><tr><td>온라인 일평균 주문</td><td>1.1건</td><td>4.2건</td><td>3.7배</td></tr><tr><td>온라인 기간 매출</td><td>654,750원 (7일)</td><td>2,144,000원 (5일, ~10/28)</td><td></td></tr><tr><td>팝업 일평균 매출</td><td>1,088,014원</td><td>1,177,000원</td><td>+8%</td></tr><tr><td>팝업 일평균 결제 주문</td><td>6.4건</td><td>10.0건</td><td>+56%</td></tr><tr><td>팝업 기간 매출</td><td>7,616,100원 (7일)</td><td>4,708,000원 (4일, ~10/27)</td><td></td></tr></tbody></table></div>
+    <p class="notice">같은 요일(10/17~20) 기준: 팝업 일매출 1,222,425원 → 1,177,000원(약 4% 낮음), 온라인 58,350원 → 496,500원(8.5배).</p>
+    <div class="table-scroll"><table class=""><thead><tr><th>유입 경로</th><th>소재</th><th>방문자</th><th>회원가입</th><th>구매자</th><th>구매금액</th><th>방문자당 구매</th></tr></thead><tbody><tr><td>메타 광고</td><td>캐러셀</td><td>1,211</td><td>12</td><td>17</td><td>1,882,000원</td><td>1.4%</td></tr><tr><td>메타 광고</td><td>패러디 – 모나리자</td><td>279</td><td>0</td><td>0</td><td>0원</td><td>0%</td></tr><tr><td>메타 광고</td><td>패러디 – 룩북</td><td>10</td><td>0</td><td>0</td><td>0원</td><td>0%</td></tr><tr><td>인스타 프로필</td><td>link in bio</td><td>260</td><td>7</td><td>1</td><td>83,000원</td><td>0.4%</td></tr><tr><td>ChatGPT</td><td>–</td><td>7</td><td>0</td><td>0</td><td>0원</td><td>0%</td></tr><tr><td>스레드 광고</td><td>–</td><td>2</td><td>0</td><td>0</td><td>0원</td><td>0%</td></tr></tbody></table></div>
+    <div class="plain-lines"><p>바이럴 효과는 짧았습니다. 인스타 프로필 링크 유입은 바이럴 직후 이틀(24~25일) 하루 90~108명으로 직전(24명) 대비 약 4배였으나, 26일에는 8명으로 줄었습니다.</p><p>프로필 유입의 도착 페이지가 구매와 멀었습니다. 프로필 링크 방문자 260명 중 252명이 홈 화면으로 들어왔습니다. 반면 캐러셀 광고는 후드 상품 페이지로 바로 연결됩니다.</p><p>패러디 소재는 클릭은 모았지만 구매는 없었습니다. 모나리자 패러디 광고는 24~26일 279명이 유입됐으나 구매·회원가입이 없었고, 27일부터는 유입이 없습니다.</p></div>
+    <figure><img src="chart_inflow.png" style="width:100%;height:auto" alt="유입 경로별 하루 방문자·구매(메타 캐러셀·모나리자·인스타 프로필)"><figcaption>유입 경로별 하루 방문자·구매(메타 캐러셀·모나리자·인스타 프로필)</figcaption></figure>
+    <div class="table-scroll"><table class=""><thead><tr><th>날짜</th><th>팝업 매출</th><th>결제 주문</th><th>이벤트 참여</th></tr></thead><tbody><tr><td>10/23(금)</td><td>615,800원</td><td>6</td><td>–</td></tr><tr><td>10/24(토)</td><td>1,360,000원</td><td>10</td><td>–</td></tr><tr><td>10/25(일) 이벤트</td><td>1,323,000원</td><td>17</td><td>103명</td></tr><tr><td>10/26(월)</td><td>532,000원</td><td>3</td><td>–</td></tr><tr><td>10/27(화)</td><td>1,493,000원</td><td>10</td><td>–</td></tr></tbody></table></div>
+    <div class="plain-lines"><p>이벤트 당일 결제는 17건으로, 팝업 기간 중 오픈 이틀째(21건) 다음으로 많았습니다. 매출은 전날과 비슷한 수준이었습니다.</p><p>참여자 103명에게 후드집업 73장, 후드 30장을 무료로 증정했습니다.</p><p>이후 기간 팝업 객단가는 117,700원으로 직전 일주일(169,247원)보다 30% 낮아, 소액 구매 비중이 늘었습니다.</p></div>
+    <div class="plain-lines"><p>주력 제품: 블랙 후드 집업 중심. 온라인 주문 1위(13건)이고, 팝업에서도 집업이 108장으로 가장 많이 판매됐습니다(그중 블랙 53장). 색상은 블랙 다음으로 멜란지 반응이 좋았습니다.</p><p>참여형 이벤트: 참여 혜택과 구매 혜택을 함께 설계. 헌후드 장례식은 하루 103명을 모을 만큼 집객 효과가 컸습니다.</p><p>콘텐츠 운영: 예고, 당일, 후기로 나눠 노출. 프로필 유입이 이벤트 다음 날 108명에서 8명으로 급감했습니다.</p><p>측정: 바이럴 전용 추적 장치 마련. 다음 릴스에는 전용 UTM 링크나 현장 코드를 붙여 메타 광고와 구분해 측정.</p></div>
+    <div class="plain-lines"><p>팝업 매출: 포스 매출리포트(10/8~27) 기준, 취소 반영. 10/28은 마감 전이라 제외.</p><p>온라인 매출: 홈페이지 일자별 매출 통계(10/8~28) 기준, 환불 반영.</p><p>유입 경로: 홈페이지 UTM 리포트(10/23~28) 기준, 마지막 클릭 기준. 릴스를 본 뒤 나중에 광고를 눌러 구매한 경우는 메타 광고로 집계.</p></div>
+    <h3>환산 vs 실제 결제</h3>
+    <p class="notice">환산(개수×홈페이지 판매가)과 실제 결제(위 문서) 비교</p>
+    <div class="table-scroll"><table><thead><tr><th>구간</th><th>환산</th><th>실제</th><th>차이%</th><th>주</th></tr></thead><tbody><tr><td>팝업 10/17~23</td><td class="num">7,495,600원</td><td class="num">7,616,100원</td><td class="num">-1.6%</td><td>환산엔 양말 30개 값 빠짐</td></tr><tr><td>팝업 10/24~27</td><td class="num">5,006,000원</td><td class="num">4,708,000원</td><td class="num">+6.3%</td><td>현장 추가 할인·이벤트로 실제가 낮음 [추정]</td></tr><tr><td>온라인 10/17~23</td><td class="num">571,750원</td><td class="num">654,750원</td><td class="num">-12.7%</td><td></td></tr><tr><td>온라인 10/24~28</td><td class="num">2,906,000원</td><td class="num">2,144,000원</td><td class="num">+35.5%</td><td>환산엔 반품요청 5개(402,000원) 들어 있음</td></tr></tbody></table></div>
+    <div class="table-scroll"><table><thead><tr><th>날짜</th><th>환산</th><th>실제</th><th>차이%</th></tr></thead><tbody><tr><td>10/23</td><td class="num">627,800원</td><td class="num">615,800원</td><td class="num">+1.9%</td></tr><tr><td>10/24</td><td class="num">1,391,400원</td><td class="num">1,360,000원</td><td class="num">+2.3%</td></tr><tr><td>10/25</td><td class="num">1,517,200원</td><td class="num">1,323,000원</td><td class="num">+14.7%</td></tr><tr><td>10/26</td><td class="num">581,000원</td><td class="num">532,000원</td><td class="num">+9.2%</td></tr><tr><td>10/27</td><td class="num">1,516,400원</td><td class="num">1,493,000원</td><td class="num">+1.6%</td></tr></tbody></table></div>
+  </section>
+
+  <section class="criteria">
+    <h2>계산 기준</h2>
+    <ul><li>수량 = 판매 리포트(10/8~10/31, 취소·반품완료 뺌) 그대로</li><li>환산 매출 = 수량 × 데드폴트 홈페이지 판매가(정가의 50%, 11/1 19시 확인). 팝업·홈페이지 모두 10/8부터 50% 할인</li><li>실제 결제 금액과는 다를 수 있음(현장 추가 할인·쿠폰·묶음)</li><li>팝업은 10/29 오후 5시까지만 들어 있음 — 10/30~31 팝업 판매 빠짐</li><li>크루 삭스 59개는 홈페이지에 없어 값을 몰라 매출에서 뺌</li><li>티셔츠 2종(Beneath the Composure, Time Walks Backwards)은 홈페이지에 없어 같은 그래픽 티셔츠 값(39,200원)으로 계산</li><li>온라인 반품요청 5개(처리 전)는 수량에 들어 있음 · 온라인 0원 주문 3건은 뺌</li><li>10/25 헌후드 장례식 무료 증정 103개는 판매가 아니라 매출에 안 넣음(아래 따로)</li></ul>
+  </section>
+</main>
+</body>
+</html>
